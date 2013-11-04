@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1B975D3C182460B2003FA16B /* MHTabBarButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B975D3B182460B2003FA16B /* MHTabBarButton.m */; };
 		7B2C1D131683543D00542AC1 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7B2C1D121683543D00542AC1 /* Default-568h@2x.png */; };
 		7B2C1D1A1683544700542AC1 /* MHTabBarActiveTab.png in Resources */ = {isa = PBXBuildFile; fileRef = 7B2C1D141683544700542AC1 /* MHTabBarActiveTab.png */; };
 		7B2C1D1B1683544700542AC1 /* MHTabBarActiveTab@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7B2C1D151683544700542AC1 /* MHTabBarActiveTab@2x.png */; };
@@ -27,6 +28,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1B975D3A182460B2003FA16B /* MHTabBarButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MHTabBarButton.h; path = MHTabBarController/MHTabBarButton.h; sourceTree = SOURCE_ROOT; };
+		1B975D3B182460B2003FA16B /* MHTabBarButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MHTabBarButton.m; path = MHTabBarController/MHTabBarButton.m; sourceTree = SOURCE_ROOT; };
 		7B2C1D121683543D00542AC1 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		7B2C1D141683544700542AC1 /* MHTabBarActiveTab.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = MHTabBarActiveTab.png; path = MHTabBarController/MHTabBarActiveTab.png; sourceTree = SOURCE_ROOT; };
 		7B2C1D151683544700542AC1 /* MHTabBarActiveTab@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "MHTabBarActiveTab@2x.png"; path = "MHTabBarController/MHTabBarActiveTab@2x.png"; sourceTree = SOURCE_ROOT; };
@@ -87,6 +90,8 @@
 				7B2C1D171683544700542AC1 /* MHTabBarInactiveTab@2x.png */,
 				7B2C1D181683544700542AC1 /* MHTabBarIndicator.png */,
 				7B2C1D191683544700542AC1 /* MHTabBarIndicator@2x.png */,
+				1B975D3A182460B2003FA16B /* MHTabBarButton.h */,
+				1B975D3B182460B2003FA16B /* MHTabBarButton.m */,
 			);
 			name = MHTabBarController;
 			path = Demo;
@@ -218,6 +223,7 @@
 				7BCE96FB1469751600135C63 /* main.m in Sources */,
 				7BCE96FF1469751600135C63 /* AppDelegate.m in Sources */,
 				7BCE970D146975EA00135C63 /* ListViewController.m in Sources */,
+				1B975D3C182460B2003FA16B /* MHTabBarButton.m in Sources */,
 				7B5C62CC168242E9005C3BD4 /* MHTabBarController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

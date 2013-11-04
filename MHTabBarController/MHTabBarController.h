@@ -20,6 +20,16 @@
  * THE SOFTWARE.
  */
 
+#define BAR_HEIGHT 50.0f
+#define BUTTON_WITDH 50.0f
+
+#define COLOR_MENU_SUBMENU 0x414042
+#define COLOR_BUTTON_SELECTED 0x1d1d24
+#define COLOR_SELECTED_LINE 0x00d2ff
+
+#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+
+
 @protocol MHTabBarControllerDelegate;
 
 /*

@@ -21,6 +21,7 @@
  */
 
 #import "MHTabBarController.h"
+#import "MHTabBarButton.h"
 
 static const NSInteger TagOffset = 1000;
 
@@ -100,18 +101,35 @@ static const NSInteger TagOffset = 1000;
 	NSUInteger index = 0;
 	for (UIViewController *viewController in self.viewControllers)
 	{
-		UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+		MHTabBarButton *button = [[MHTabBarButton alloc] initWithTitle:viewController.tabBarItem.title];
 		button.tag = TagOffset + index;
 		button.titleLabel.font = [UIFont boldSystemFontOfSize:18];
-		button.titleLabel.shadowOffset = CGSizeMake(0.0f, 1.0f);
+		
+//		Normal status of the button
+		[button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+		
+		UIImage *image = [[UIImage imageNamed:@"MHTabBarInactiveTab"] stretchableImageWithLeftCapWidth:1 topCapHeight:0];
+		[button setBackgroundImage:image forState:UIControlStateNormal];
 
+		[button setTitleColor:[UIColor colorWithRed:175/255.0f green:85/255.0f blue:58/255.0f alpha:1.0f] forState:UIControlStateNormal];
+		[button setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
+		
+//		Selected status and highlighted
+		[button setTitleColor:[UIColor redColor] forState:UIControlStateSelected];
+		image = [[UIImage imageNamed:@"MHTabBarActiveTab"] stretchableImageWithLeftCapWidth:0 topCapHeight:0];
+		[button setBackgroundImage:image forState:UIControlStateSelected];
+
+		[button setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
+		[button setTitleShadowColor:[UIColor colorWithWhite:0.0f alpha:0.5f] forState:UIControlStateSelected];
+
+		
 		UIOffset offset = viewController.tabBarItem.titlePositionAdjustment;
 		button.titleEdgeInsets = UIEdgeInsetsMake(offset.vertical, offset.horizontal, 0.0f, 0.0f);
 		button.imageEdgeInsets = viewController.tabBarItem.imageInsets;
 		[button setTitle:viewController.tabBarItem.title forState:UIControlStateNormal];
 		[button setImage:viewController.tabBarItem.image forState:UIControlStateNormal];
 
-		[button addTarget:self action:@selector(tabButtonPressed:) forControlEvents:UIControlEventTouchDown];
+		[button addTarget:self action:@selector(tabButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
 
 		[self deselectTabButton:button];
 		[tabButtonsContainerView addSubview:button];
@@ -138,7 +156,7 @@ static const NSInteger TagOffset = 1000;
 	indicatorImageView.hidden = YES;
 
 	NSArray *buttons = [tabButtonsContainerView subviews];
-	for (UIButton *button in buttons)
+	for (MHTabBarButton *button in buttons)
 	{
 		if (index == count - 1)
 			rect.size.width = self.view.bounds.size.width - rect.origin.x;
@@ -153,7 +171,7 @@ static const NSInteger TagOffset = 1000;
 	}
 }
 
-- (void)centerIndicatorOnButton:(UIButton *)button
+- (void)centerIndicatorOnButton:(MHTabBarButton *)button
 {
 	CGRect rect = indicatorImageView.frame;
 	rect.origin.x = button.center.x - floorf(indicatorImageView.frame.size.width/2.0f);
@@ -225,7 +243,7 @@ static const NSInteger TagOffset = 1000;
 
 		if (_selectedIndex != NSNotFound)
 		{
-			UIButton *fromButton = (UIButton *)[tabButtonsContainerView viewWithTag:TagOffset + _selectedIndex];
+			MHTabBarButton *fromButton = (MHTabBarButton *)[tabButtonsContainerView viewWithTag:TagOffset + _selectedIndex];
 			[self deselectTabButton:fromButton];
 			fromViewController = self.selectedViewController;
 		}
@@ -233,10 +251,10 @@ static const NSInteger TagOffset = 1000;
 		NSUInteger oldSelectedIndex = _selectedIndex;
 		_selectedIndex = newSelectedIndex;
 
-		UIButton *toButton;
+		MHTabBarButton *toButton;
 		if (_selectedIndex != NSNotFound)
 		{
-			toButton = (UIButton *)[tabButtonsContainerView viewWithTag:TagOffset + _selectedIndex];
+			toButton = (MHTabBarButton *)[tabButtonsContainerView viewWithTag:TagOffset + _selectedIndex];
 			[self selectTabButton:toButton];
 			toViewController = self.selectedViewController;
 		}
@@ -323,35 +341,21 @@ static const NSInteger TagOffset = 1000;
 		[self setSelectedIndex:index animated:animated];
 }
 
-- (void)tabButtonPressed:(UIButton *)sender
+- (void)tabButtonPressed:(MHTabBarButton *)sender
 {
 	[self setSelectedIndex:sender.tag - TagOffset animated:YES];
 }
 
 #pragma mark - Change these methods to customize the look of the buttons
 
-- (void)selectTabButton:(UIButton *)button
+- (void)selectTabButton:(MHTabBarButton *)button
 {
-	[button setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
-
-	UIImage *image = [[UIImage imageNamed:@"MHTabBarActiveTab"] stretchableImageWithLeftCapWidth:0 topCapHeight:0];
-	[button setBackgroundImage:image forState:UIControlStateNormal];
-	[button setBackgroundImage:image forState:UIControlStateHighlighted];
-	
-	[button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-	[button setTitleShadowColor:[UIColor colorWithWhite:0.0f alpha:0.5f] forState:UIControlStateNormal];
+	[button setSelected:YES];
 }
 
-- (void)deselectTabButton:(UIButton *)button
+- (void)deselectTabButton:(MHTabBarButton *)button
 {
-	[button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-
-	UIImage *image = [[UIImage imageNamed:@"MHTabBarInactiveTab"] stretchableImageWithLeftCapWidth:1 topCapHeight:0];
-	[button setBackgroundImage:image forState:UIControlStateNormal];
-	[button setBackgroundImage:image forState:UIControlStateHighlighted];
-
-	[button setTitleColor:[UIColor colorWithRed:175/255.0f green:85/255.0f blue:58/255.0f alpha:1.0f] forState:UIControlStateNormal];
-	[button setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
+	[button setSelected:NO];
 }
 
 - (CGFloat)tabBarHeight
