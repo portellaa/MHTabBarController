@@ -35,7 +35,10 @@
 @property (nonatomic, assign) NSUInteger selectedIndex;
 @property (nonatomic, weak) id <MHTabBarControllerDelegate> delegate;
 @property (nonatomic) CGFloat barHeight;
+@property (nonatomic, retain) UIColor *barColor;
+
 @property (nonatomic) CGFloat buttonWidth;
+
 @property (nonatomic, retain) UIImageView *indicator;
 
 

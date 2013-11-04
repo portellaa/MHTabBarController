@@ -43,6 +43,7 @@ static const NSInteger TagOffset = 1000;
 	{
 		_barHeight = BAR_HEIGHT;
 		_buttonWidth = 0.0f;
+		_barColor = [UIColor blackColor];
 		
 		customButtonWidth = NO;
 		customIndicator = NO;
@@ -57,17 +58,18 @@ static const NSInteger TagOffset = 1000;
 {
 	[super viewDidLoad];
 
-	self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	[self.view setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
 
 	CGRect rect = CGRectMake(0.0f, 0.0f, self.view.bounds.size.width, _barHeight);
 	tabButtonsContainerView = [[UIView alloc] initWithFrame:rect];
-	tabButtonsContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+	[tabButtonsContainerView setBackgroundColor:_barColor];
+	[tabButtonsContainerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
 	[self.view addSubview:tabButtonsContainerView];
 
 	rect.origin.y = _barHeight;
 	rect.size.height = self.view.bounds.size.height - _barHeight;
 	contentContainerView = [[UIView alloc] initWithFrame:rect];
-	contentContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	[contentContainerView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
 	[self.view addSubview:contentContainerView];
 
 	[self.view addSubview:_indicator];
