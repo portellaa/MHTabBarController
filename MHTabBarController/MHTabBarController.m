@@ -20,6 +20,14 @@
  * THE SOFTWARE.
  */
 
+#define BAR_HEIGHT 50.0f
+
+#define COLOR_MENU_SUBMENU 0x414042
+#define COLOR_BUTTON_SELECTED 0x1d1d24
+#define COLOR_SELECTED_LINE 0x00d2ff
+
+#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+
 #import "MHTabBarController.h"
 #import "MHTabBarButton.h"
 
@@ -30,6 +38,23 @@ static const NSInteger TagOffset = 1000;
 	UIView *tabButtonsContainerView;
 	UIView *contentContainerView;
 	UIImageView *indicatorImageView;
+	
+	BOOL customButtonWidth;
+}
+
+- (id)init
+{
+	self = [super init];
+	
+	if (self)
+	{
+		_barHeight = BAR_HEIGHT;
+		_buttonWidth = 0.0f;
+		
+		customButtonWidth = NO;
+	}
+	
+	return self;
 }
 
 - (void)viewDidLoad
@@ -38,13 +63,13 @@ static const NSInteger TagOffset = 1000;
 
 	self.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
-	CGRect rect = CGRectMake(0.0f, 0.0f, self.view.bounds.size.width, self.tabBarHeight);
+	CGRect rect = CGRectMake(0.0f, 0.0f, self.view.bounds.size.width, _barHeight);
 	tabButtonsContainerView = [[UIView alloc] initWithFrame:rect];
 	tabButtonsContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 	[self.view addSubview:tabButtonsContainerView];
 
-	rect.origin.y = self.tabBarHeight;
-	rect.size.height = self.view.bounds.size.height - self.tabBarHeight;
+	rect.origin.y = _barHeight;
+	rect.size.height = self.view.bounds.size.height - _barHeight;
 	contentContainerView = [[UIView alloc] initWithFrame:rect];
 	contentContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[self.view addSubview:contentContainerView];
@@ -150,15 +175,16 @@ static const NSInteger TagOffset = 1000;
 {
 	NSUInteger index = 0;
 	NSUInteger count = [self.viewControllers count];
+	if (count == 0)
+		return;
 
-	CGRect rect = CGRectMake(0.0f, 0.0f, floorf(self.view.bounds.size.width / count), self.tabBarHeight);
+	CGRect rect = CGRectMake(0.0f, 0.0f, _buttonWidth, _barHeight);
 
 	indicatorImageView.hidden = YES;
 
-	NSArray *buttons = [tabButtonsContainerView subviews];
-	for (MHTabBarButton *button in buttons)
+	for (MHTabBarButton *button in [tabButtonsContainerView subviews])
 	{
-		if (index == count - 1)
+		if ((index == count - 1) && (customButtonWidth == NO))
 			rect.size.width = self.view.bounds.size.width - rect.origin.x;
 
 		button.frame = rect;
@@ -175,9 +201,15 @@ static const NSInteger TagOffset = 1000;
 {
 	CGRect rect = indicatorImageView.frame;
 	rect.origin.x = button.center.x - floorf(indicatorImageView.frame.size.width/2.0f);
-	rect.origin.y = self.tabBarHeight - indicatorImageView.frame.size.height;
+	rect.origin.y = _barHeight - indicatorImageView.frame.size.height;
 	indicatorImageView.frame = rect;
 	indicatorImageView.hidden = NO;
+}
+
+- (void)setButtonWidth:(CGFloat)buttonWidth
+{
+	customButtonWidth = YES;
+	_buttonWidth = buttonWidth;
 }
 
 - (void)setViewControllers:(NSArray *)newViewControllers
@@ -194,6 +226,10 @@ static const NSInteger TagOffset = 1000;
 	}
 
 	_viewControllers = [newViewControllers copy];
+	
+//	calculate new width of button if no custom value specified
+	if (customButtonWidth == NO)
+		_buttonWidth = floorf(self.view.bounds.size.width / [_viewControllers count]);
 
 	// This follows the same rules as UITabBarController for trying to
 	// re-select the previously selected view controller.
@@ -356,11 +392,6 @@ static const NSInteger TagOffset = 1000;
 - (void)deselectTabButton:(MHTabBarButton *)button
 {
 	[button setSelected:NO];
-}
-
-- (CGFloat)tabBarHeight
-{
-	return 44.0f;
 }
 
 @end
