@@ -20,6 +20,8 @@
  * THE SOFTWARE.
  */
 
+#import "MHTabBarButton.h"
+
 @protocol MHTabBarControllerDelegate;
 
 /*
@@ -32,9 +34,10 @@
 @property (nonatomic, weak) UIViewController *selectedViewController;
 @property (nonatomic, assign) NSUInteger selectedIndex;
 @property (nonatomic, weak) id <MHTabBarControllerDelegate> delegate;
-
 @property (nonatomic) CGFloat barHeight;
 @property (nonatomic) CGFloat buttonWidth;
+@property (nonatomic, retain) UIImageView *indicator;
+
 
 - (void)setSelectedIndex:(NSUInteger)index animated:(BOOL)animated;
 - (void)setSelectedViewController:(UIViewController *)viewController animated:(BOOL)animated;
@@ -48,4 +51,5 @@
 @optional
 - (BOOL)mh_tabBarController:(MHTabBarController *)tabBarController shouldSelectViewController:(UIViewController *)viewController atIndex:(NSUInteger)index;
 - (void)mh_tabBarController:(MHTabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController atIndex:(NSUInteger)index;
+- (MHTabBarButton*)personalizeButton:(MHTabBarButton*)button toViewController:(UIViewController*)viewController;
 @end

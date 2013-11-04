@@ -22,14 +22,8 @@
 
 #define BAR_HEIGHT 50.0f
 
-#define COLOR_MENU_SUBMENU 0x414042
-#define COLOR_BUTTON_SELECTED 0x1d1d24
-#define COLOR_SELECTED_LINE 0x00d2ff
-
-#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
-
 #import "MHTabBarController.h"
-#import "MHTabBarButton.h"
+
 
 static const NSInteger TagOffset = 1000;
 
@@ -37,9 +31,8 @@ static const NSInteger TagOffset = 1000;
 {
 	UIView *tabButtonsContainerView;
 	UIView *contentContainerView;
-	UIImageView *indicatorImageView;
 	
-	BOOL customButtonWidth;
+	BOOL customButtonWidth, customIndicator;
 }
 
 - (id)init
@@ -52,6 +45,9 @@ static const NSInteger TagOffset = 1000;
 		_buttonWidth = 0.0f;
 		
 		customButtonWidth = NO;
+		customIndicator = NO;
+
+		_indicator = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"MHTabBarIndicator"]];
 	}
 	
 	return self;
@@ -74,8 +70,7 @@ static const NSInteger TagOffset = 1000;
 	contentContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[self.view addSubview:contentContainerView];
 
-	indicatorImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"MHTabBarIndicator"]];
-	[self.view addSubview:indicatorImageView];
+	[self.view addSubview:_indicator];
 
 	[self reloadTabButtons];
 }
@@ -106,7 +101,7 @@ static const NSInteger TagOffset = 1000;
 		self.view = nil;
 		tabButtonsContainerView = nil;
 		contentContainerView = nil;
-		indicatorImageView = nil;
+		customButtonWidth = nil;
 	}
 }
 
@@ -128,31 +123,10 @@ static const NSInteger TagOffset = 1000;
 	{
 		MHTabBarButton *button = [[MHTabBarButton alloc] initWithTitle:viewController.tabBarItem.title];
 		button.tag = TagOffset + index;
-		button.titleLabel.font = [UIFont boldSystemFontOfSize:18];
 		
-//		Normal status of the button
-		[button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-		
-		UIImage *image = [[UIImage imageNamed:@"MHTabBarInactiveTab"] stretchableImageWithLeftCapWidth:1 topCapHeight:0];
-		[button setBackgroundImage:image forState:UIControlStateNormal];
-
-		[button setTitleColor:[UIColor colorWithRed:175/255.0f green:85/255.0f blue:58/255.0f alpha:1.0f] forState:UIControlStateNormal];
-		[button setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
-		
-//		Selected status and highlighted
-		[button setTitleColor:[UIColor redColor] forState:UIControlStateSelected];
-		image = [[UIImage imageNamed:@"MHTabBarActiveTab"] stretchableImageWithLeftCapWidth:0 topCapHeight:0];
-		[button setBackgroundImage:image forState:UIControlStateSelected];
-
-		[button setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
-		[button setTitleShadowColor:[UIColor colorWithWhite:0.0f alpha:0.5f] forState:UIControlStateSelected];
-
-		
-		UIOffset offset = viewController.tabBarItem.titlePositionAdjustment;
-		button.titleEdgeInsets = UIEdgeInsetsMake(offset.vertical, offset.horizontal, 0.0f, 0.0f);
-		button.imageEdgeInsets = viewController.tabBarItem.imageInsets;
-		[button setTitle:viewController.tabBarItem.title forState:UIControlStateNormal];
-		[button setImage:viewController.tabBarItem.image forState:UIControlStateNormal];
+		if ([self.delegate respondsToSelector:@selector(personalizeButton:toViewController:)])
+			button = [self.delegate personalizeButton:button toViewController:viewController];
+		else button = [self personalizeButton:button toViewController:viewController];
 
 		[button addTarget:self action:@selector(tabButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
 
@@ -180,7 +154,7 @@ static const NSInteger TagOffset = 1000;
 
 	CGRect rect = CGRectMake(0.0f, 0.0f, _buttonWidth, _barHeight);
 
-	indicatorImageView.hidden = YES;
+	_indicator.hidden = YES;
 
 	for (MHTabBarButton *button in [tabButtonsContainerView subviews])
 	{
@@ -199,17 +173,30 @@ static const NSInteger TagOffset = 1000;
 
 - (void)centerIndicatorOnButton:(MHTabBarButton *)button
 {
-	CGRect rect = indicatorImageView.frame;
-	rect.origin.x = button.center.x - floorf(indicatorImageView.frame.size.width/2.0f);
-	rect.origin.y = _barHeight - indicatorImageView.frame.size.height;
-	indicatorImageView.frame = rect;
-	indicatorImageView.hidden = NO;
+	CGRect rect = _indicator.frame;
+	rect.origin.x = button.center.x - floorf(_indicator.frame.size.width/2.0f);
+	rect.origin.y = _barHeight - _indicator.frame.size.height;
+	_indicator.frame = rect;
+	_indicator.hidden = NO;
 }
 
 - (void)setButtonWidth:(CGFloat)buttonWidth
 {
 	customButtonWidth = YES;
 	_buttonWidth = buttonWidth;
+	
+	if (customIndicator == YES)
+	{
+		CGRect frame = [_indicator frame];
+		frame.size.width = buttonWidth;
+		[_indicator setFrame:frame];
+	}
+}
+
+- (void)setIndicator:(UIImageView *)indicator
+{
+	customIndicator = YES;
+	_indicator = indicator;
 }
 
 - (void)setViewControllers:(NSArray *)newViewControllers
@@ -227,9 +214,9 @@ static const NSInteger TagOffset = 1000;
 
 	_viewControllers = [newViewControllers copy];
 	
-//	calculate new width of button if no custom value specified
+//	Calculate new width of button if no custom value specified
 	if (customButtonWidth == NO)
-		_buttonWidth = floorf(self.view.bounds.size.width / [_viewControllers count]);
+		[self setButtonWidth:floorf(self.view.bounds.size.width / [_viewControllers count])];
 
 	// This follows the same rules as UITabBarController for trying to
 	// re-select the previously selected view controller.
@@ -383,6 +370,38 @@ static const NSInteger TagOffset = 1000;
 }
 
 #pragma mark - Change these methods to customize the look of the buttons
+
+// You can customize this method, or use the delegator to create method without change
+- (MHTabBarButton*)personalizeButton:(MHTabBarButton*)button toViewController:(UIViewController *)viewController
+{
+	button.titleLabel.font = [UIFont boldSystemFontOfSize:18];
+	
+	//	Normal status of the button
+	[button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+	
+	UIImage *image = [[UIImage imageNamed:@"MHTabBarInactiveTab"] stretchableImageWithLeftCapWidth:1 topCapHeight:0];
+	[button setBackgroundImage:image forState:UIControlStateNormal];
+	
+	[button setTitleColor:[UIColor colorWithRed:175/255.0f green:85/255.0f blue:58/255.0f alpha:1.0f] forState:UIControlStateNormal];
+	[button setTitleShadowColor:[UIColor whiteColor] forState:UIControlStateNormal];
+	
+	//	Selected status and highlighted
+	[button setTitleColor:[UIColor redColor] forState:UIControlStateSelected];
+	image = [[UIImage imageNamed:@"MHTabBarActiveTab"] stretchableImageWithLeftCapWidth:0 topCapHeight:0];
+	[button setBackgroundImage:image forState:UIControlStateSelected];
+	
+	[button setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
+	[button setTitleShadowColor:[UIColor colorWithWhite:0.0f alpha:0.5f] forState:UIControlStateSelected];
+	
+	
+	UIOffset offset = viewController.tabBarItem.titlePositionAdjustment;
+	button.titleEdgeInsets = UIEdgeInsetsMake(offset.vertical, offset.horizontal, 0.0f, 0.0f);
+	button.imageEdgeInsets = viewController.tabBarItem.imageInsets;
+	[button setTitle:viewController.tabBarItem.title forState:UIControlStateNormal];
+	[button setImage:viewController.tabBarItem.image forState:UIControlStateNormal];
+	
+	return button;
+}
 
 - (void)selectTabButton:(MHTabBarButton *)button
 {
