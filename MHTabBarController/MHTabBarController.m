@@ -103,7 +103,6 @@ static const NSInteger TagOffset = 1000;
 		self.view = nil;
 		tabButtonsContainerView = nil;
 		contentContainerView = nil;
-		customButtonWidth = nil;
 	}
 }
 
@@ -306,7 +305,7 @@ static const NSInteger TagOffset = 1000;
 				rect.origin.x = -rect.size.width;
 
 			toViewController.view.frame = rect;
-			tabButtonsContainerView.userInteractionEnabled = NO;
+//			tabButtonsContainerView.userInteractionEnabled = NO;
 
 			[self transitionFromViewController:fromViewController
 				toViewController:toViewController
@@ -319,9 +318,22 @@ static const NSInteger TagOffset = 1000;
 						rect.origin.x = -rect.size.width;
 					else
 						rect.origin.x = rect.size.width;
-
+					
 					fromViewController.view.frame = rect;
 					toViewController.view.frame = contentContainerView.bounds;
+//					dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+//						dispatch_async(dispatch_get_main_queue(), ^{
+//							CGRect rect = fromViewController.view.frame;
+//							if (oldSelectedIndex < newSelectedIndex)
+//								rect.origin.x = -rect.size.width;
+//							else
+//								rect.origin.x = rect.size.width;
+//							
+//							fromViewController.view.frame = rect;
+//							toViewController.view.frame = contentContainerView.bounds;
+//						});
+//					});
+					
 					[self centerIndicatorOnButton:toButton];
 				}
 				completion:^(BOOL finished)
