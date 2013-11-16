@@ -45,6 +45,8 @@ static const NSInteger TagOffset = 1000;
 		_buttonWidth = 0.0f;
 		_barColor = [UIColor blackColor];
 		
+		_top = CGPointMake(0.0f, 0.0f);
+		
 		customButtonWidth = NO;
 		customIndicator = NO;
 
@@ -60,13 +62,14 @@ static const NSInteger TagOffset = 1000;
 
 	[self.view setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
 
-	CGRect rect = CGRectMake(0.0f, 0.0f, self.view.bounds.size.width, _barHeight);
+	CGRect rect = CGRectMake(_top.x, _top.y, self.view.bounds.size.width, _barHeight);
 	tabButtonsContainerView = [[UIView alloc] initWithFrame:rect];
 	[tabButtonsContainerView setBackgroundColor:_barColor];
 	[tabButtonsContainerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+	[tabButtonsContainerView setOpaque:NO];
 	[self.view addSubview:tabButtonsContainerView];
 
-	rect.origin.y = _barHeight;
+	rect.origin.y += _barHeight;
 	rect.size.height = self.view.bounds.size.height - _barHeight;
 	contentContainerView = [[UIView alloc] initWithFrame:rect];
 	[contentContainerView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
@@ -176,7 +179,7 @@ static const NSInteger TagOffset = 1000;
 {
 	CGRect rect = _indicator.frame;
 	rect.origin.x = button.center.x - floorf(_indicator.frame.size.width/2.0f);
-	rect.origin.y = _barHeight - _indicator.frame.size.height;
+//	rect.origin.y = _barHeight - _indicator.frame.size.height;
 	_indicator.frame = rect;
 	_indicator.hidden = NO;
 }
@@ -202,7 +205,8 @@ static const NSInteger TagOffset = 1000;
 
 - (void)setViewControllers:(NSArray *)newViewControllers
 {
-	NSAssert([newViewControllers count] >= 2, @"MHTabBarController requires at least two view controllers");
+	NSAssert([newViewControllers count] >= 1
+			 , @"MHTabBarController requires at least two view controllers");
 
 	UIViewController *oldSelectedViewController = self.selectedViewController;
 

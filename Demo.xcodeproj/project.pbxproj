@@ -84,14 +84,14 @@
 			children = (
 				7B5C62CA168242E9005C3BD4 /* MHTabBarController.h */,
 				7B5C62CB168242E9005C3BD4 /* MHTabBarController.m */,
+				1B975D3A182460B2003FA16B /* MHTabBarButton.h */,
+				1B975D3B182460B2003FA16B /* MHTabBarButton.m */,
 				7B2C1D141683544700542AC1 /* MHTabBarActiveTab.png */,
 				7B2C1D151683544700542AC1 /* MHTabBarActiveTab@2x.png */,
 				7B2C1D161683544700542AC1 /* MHTabBarInactiveTab.png */,
 				7B2C1D171683544700542AC1 /* MHTabBarInactiveTab@2x.png */,
 				7B2C1D181683544700542AC1 /* MHTabBarIndicator.png */,
 				7B2C1D191683544700542AC1 /* MHTabBarIndicator@2x.png */,
-				1B975D3A182460B2003FA16B /* MHTabBarButton.h */,
-				1B975D3B182460B2003FA16B /* MHTabBarButton.m */,
 			);
 			name = MHTabBarController;
 			path = Demo;

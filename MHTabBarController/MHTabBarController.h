@@ -37,6 +37,8 @@
 @property (nonatomic) CGFloat barHeight;
 @property (nonatomic, retain) UIColor *barColor;
 
+@property (nonatomic) CGPoint top;
+
 @property (nonatomic) CGFloat buttonWidth;
 
 @property (nonatomic, retain) UIImageView *indicator;
