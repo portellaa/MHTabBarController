@@ -61,8 +61,9 @@ static const NSInteger TagOffset = 1000;
 	[super viewDidLoad];
 
 	[self.view setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
-
+	
 	CGRect rect = CGRectMake(_top.x, _top.y, self.view.bounds.size.width, _barHeight);
+	rect.origin.y += ([UIApplication sharedApplication].statusBarFrame.size.height + [UIApplication sharedApplication].statusBarFrame.origin.y);
 	tabButtonsContainerView = [[UIView alloc] initWithFrame:rect];
 	[tabButtonsContainerView setBackgroundColor:_barColor];
 	[tabButtonsContainerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
@@ -200,6 +201,12 @@ static const NSInteger TagOffset = 1000;
 - (void)setIndicator:(UIImageView *)indicator
 {
 	customIndicator = YES;
+	
+	CGRect frame = indicator.frame;
+	CGRect sbFrame = [UIApplication sharedApplication].statusBarFrame;
+	frame.origin.y += (sbFrame.origin.y + sbFrame.size.height);
+	[indicator setFrame:frame];
+	
 	_indicator = indicator;
 }
 
