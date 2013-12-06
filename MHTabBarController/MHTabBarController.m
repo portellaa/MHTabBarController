@@ -24,8 +24,13 @@
 
 #import "MHTabBarController.h"
 
-
 static const NSInteger TagOffset = 1000;
+
+@interface MHTabBarController ()
+
+@property CGRect indicatorOriginalFrame;
+
+@end
 
 @implementation MHTabBarController
 {
@@ -178,11 +183,18 @@ static const NSInteger TagOffset = 1000;
 
 - (void)centerIndicatorOnButton:(MHTabBarButton *)button
 {
-	CGRect rect = _indicator.frame;
-	rect.origin.x = button.center.x - floorf(_indicator.frame.size.width/2.0f);
-//	rect.origin.y = _barHeight - _indicator.frame.size.height;
-	_indicator.frame = rect;
-	_indicator.hidden = NO;
+	if ([_delegate respondsToSelector:@selector(mh_tabBarController:personalizeIndicator:toButton:)])
+	{
+		[_delegate mh_tabBarController:self personalizeIndicator:_indicator toButton:button];
+	}
+	else
+	{
+		CGRect rect = _indicator.frame;
+		rect.origin.x = (_buttonWidth * _selectedIndex);
+		//	rect.origin.y = _barHeight - _indicator.frame.size.height;
+		_indicator.frame = rect;
+		_indicator.hidden = NO;
+	}
 }
 
 - (void)setButtonWidth:(CGFloat)buttonWidth
@@ -206,6 +218,8 @@ static const NSInteger TagOffset = 1000;
 	CGRect sbFrame = [UIApplication sharedApplication].statusBarFrame;
 	frame.origin.y += (sbFrame.origin.y + sbFrame.size.height);
 	[indicator setFrame:frame];
+	
+	_indicatorOriginalFrame = frame;
 	
 	_indicator = indicator;
 }
@@ -273,6 +287,11 @@ static const NSInteger TagOffset = 1000;
 	}
 	else if (_selectedIndex != newSelectedIndex)
 	{
+		for (unsigned int i = 0; i < [self.viewControllers count]; i++)
+		{
+			[self changeButtonStateIndex:i toState:UIControlStateNormal];
+		}
+		
 		UIViewController *fromViewController;
 		UIViewController *toViewController;
 
@@ -436,6 +455,15 @@ static const NSInteger TagOffset = 1000;
 - (void)deselectTabButton:(MHTabBarButton *)button
 {
 	[button setSelected:NO];
+}
+
+- (void)changeButtonStateIndex:(NSUInteger)index toState:(UIControlState)state
+{
+	NSAssert(index < [self.viewControllers count], @"");
+	
+	MHTabBarButton *button = (MHTabBarButton*)[[tabButtonsContainerView subviews] objectAtIndex:index];
+	
+	[button setState:state];
 }
 
 @end

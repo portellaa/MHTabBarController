@@ -47,6 +47,8 @@
 - (void)setSelectedIndex:(NSUInteger)index animated:(BOOL)animated;
 - (void)setSelectedViewController:(UIViewController *)viewController animated:(BOOL)animated;
 
+- (void)changeButtonStateIndex:(NSUInteger)index toState:(UIControlState)state;
+
 @end
 
 /*
@@ -57,4 +59,7 @@
 - (BOOL)mh_tabBarController:(MHTabBarController *)tabBarController shouldSelectViewController:(UIViewController *)viewController atIndex:(NSUInteger)index;
 - (void)mh_tabBarController:(MHTabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController atIndex:(NSUInteger)index;
 - (MHTabBarButton*)personalizeButton:(MHTabBarButton*)button toViewController:(UIViewController*)viewController;
+
+- (BOOL)mh_tabBarController:(MHTabBarController*)tabBarController personalizeIndicator:(UIView*)indicator toButton:(MHTabBarButton*)button;
+
 @end

@@ -2,6 +2,7 @@
 #define COLOR_MENU_SUBMENU 0x414042
 #define COLOR_BUTTON_SELECTED 0x1d1d24
 #define COLOR_SELECTED_LINE 0x00d2ff
+#define COLOR_MENU_COMBO 0x363436
 
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
@@ -69,6 +70,11 @@
 {
 	button.titleLabel.font = [UIFont boldSystemFontOfSize:18];
 	
+//	
+	[button setBackgroundColor:UIColorFromRGB(COLOR_MENU_COMBO) forState:UIControlStateReserved];
+	[button setTitleColor:UIColorFromRGB(COLOR_SELECTED_LINE) forState:UIControlStateReserved];
+//	[button setTitle:@"4" forState:UIControlStateHighlighted];
+	
 //	Normal status of the button
 	[button setBackgroundColor:UIColorFromRGB(COLOR_MENU_SUBMENU) forState:UIControlStateNormal];
 	[button setTitleColor:UIColorFromRGB(COLOR_SELECTED_LINE) forState:UIControlStateNormal];
@@ -99,6 +105,41 @@
 //	[button setImage:viewController.tabBarItem.image forState:UIControlStateNormal];
 	
 	return button;
+}
+
+- (BOOL)mh_tabBarController:(MHTabBarController *)tabBarController personalizeIndicator:(UIView *)indicator toButton:(MHTabBarButton *)button
+{
+	NSLog(@"[Delegate] Selected Index: %u - New Selected Index: %u", tabBarController.selectedIndex, tabBarController.selectedIndex);
+	
+	if (tabBarController.selectedIndex == 0)
+	{
+		[tabBarController changeButtonStateIndex:1 toState:UIControlStateReserved];
+		[tabBarController changeButtonStateIndex:2 toState:UIControlStateReserved];
+		
+		CGRect rect = indicator.frame;
+		
+		rect.origin.x = 0.0f;
+		rect.size.width = 60.0f * 3;
+		indicator.frame = rect;
+		
+		indicator.hidden = NO;
+	}
+	else
+	{
+//		[tabBarController changeButtonStateIndex:1 toState:UIControlStateNormal];
+//		[tabBarController changeButtonStateIndex:2 toState:UIControlStateNormal];
+		
+		CGRect rect = indicator.frame;
+		rect.size.width = 60.0f;
+//		rect.origin.x = button.center.x - floorf(indicator.frame.size.width/2.0f);
+		rect.origin.x = 60.0f * tabBarController.selectedIndex;
+		//	rect.origin.y = _barHeight - _indicator.frame.size.height;
+		indicator.frame = rect;
+		
+		indicator.hidden = NO;
+	}
+	
+	return YES;
 }
 
 @end

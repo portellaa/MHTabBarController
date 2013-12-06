@@ -11,6 +11,8 @@
 {
 	UIColor *normalColor;
 	UIColor *selectedColor;
+	UIColor *highlightedColor;
+	UIColor *reservedColor;
 }
 
 - (id)initWithImage:(UIImage*)image;
@@ -18,5 +20,7 @@
 
 - (void)setColor:(UIColor *)color forState:(UIControlState)state;
 - (void)setBackgroundColor:(UIColor *)backgroundColor forState:(UIControlState)state;
+- (void)setReserved:(BOOL)reserved;
+- (void)setState:(UIControlState)state;
 
 @end
