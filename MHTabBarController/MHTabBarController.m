@@ -74,13 +74,16 @@ static const NSInteger TagOffset = 1000;
 	[tabButtonsContainerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
 	[tabButtonsContainerView setOpaque:NO];
 	[self.view addSubview:tabButtonsContainerView];
+	
+	NSLog(@"[MHTabBarController]: Rect before tabButtonsContainerView: %@", NSStringFromCGRect(contentContainerView.frame));
 
 	rect.origin.y += _barHeight;
-	rect.size.height = self.view.bounds.size.height - _barHeight;
+	rect.size.height = self.view.bounds.size.height - rect.origin.y;
 	contentContainerView = [[UIView alloc] initWithFrame:rect];
 	[contentContainerView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
 	[self.view addSubview:contentContainerView];
-
+	NSLog(@"[MHTabBarController]: Size of contentContainer: %@", NSStringFromCGRect(contentContainerView.frame));
+	
 	[self.view addSubview:_indicator];
 
 	[self reloadTabButtons];
