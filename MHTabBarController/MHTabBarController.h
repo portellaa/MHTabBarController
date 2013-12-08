@@ -28,26 +28,69 @@
  * A custom tab bar container view controller. It works just like a regular
  * UITabBarController, except the tabs are at the top and look different.
  */
-@interface MHTabBarController : UIViewController
+@interface MHTabBarController : UIViewController<UIGestureRecognizerDelegate>
 
-@property (nonatomic, copy) NSArray *viewControllers;
-@property (nonatomic, weak) UIViewController *selectedViewController;
-@property (nonatomic, assign) NSUInteger selectedIndex;
+/**
+ *  The top bar delegate object
+ */
 @property (nonatomic, weak) id <MHTabBarControllerDelegate> delegate;
+/**
+ *  Array of view controllers to be placed on the top bar
+ */
+@property (nonatomic, copy) NSArray *viewControllers;
+/**
+ *  The visible ViewController
+ */
+@property (nonatomic, weak) UIViewController *selectedViewController;
+/**
+ *  The index of the selected View controller
+ */
+@property (nonatomic, assign) NSUInteger selectedIndex;
+/**
+ *  Height of top bar
+ */
 @property (nonatomic) CGFloat barHeight;
+/**
+ *  Color of top bar
+ */
 @property (nonatomic, retain) UIColor *barColor;
-
+/**
+ *  Top location of the bar
+ */
 @property (nonatomic) CGPoint top;
-
+/**
+ *  Width of each button on the top bar. If no size specified, the width is calculated with the top bar width and the number of view controllers
+ */
 @property (nonatomic) CGFloat buttonWidth;
-
+/**
+ *  View used to create the indicator
+ */
 @property (nonatomic, retain) UIImageView *indicator;
 
 
+/**
+ *  Used to change the visible view controller using the index of the view on the top bar.
+ *
+ *  @param index    A NSUInteger value with the index of the view controller to be selected
+ *  @param animated A BOOL value that indicates if the transition to the new view controller should be animated
+ */
 - (void)setSelectedIndex:(NSUInteger)index animated:(BOOL)animated;
+/**
+ *  Used to change the visible view controller with the view controller that is to be visible.
+ *
+ *  @param viewController An UIViewController instance that is to shown
+ *  @param animated       A BOOL value that indicates if the transition to the new view controller should be animated
+ */
 - (void)setSelectedViewController:(UIViewController *)viewController animated:(BOOL)animated;
-
+/**
+ *  This method is used to force the status of a button on the top bar
+ *
+ *  @param index A NSUInteger value with the index of the button that is to be changed
+ *  @param state An UIControlState with the new state of the button
+ */
 - (void)changeButtonStateIndex:(NSUInteger)index toState:(UIControlState)state;
+
+- (void)setSwipe:(UISwipeGestureRecognizerDirection)recognizerDirection;
 
 @end
 

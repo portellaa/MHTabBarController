@@ -30,6 +30,8 @@ static const NSInteger TagOffset = 1000;
 
 @property CGRect indicatorOriginalFrame;
 
+@property (nonatomic, retain) UISwipeGestureRecognizer *swipeLeft, *swipeRight;
+
 @end
 
 @implementation MHTabBarController
@@ -81,6 +83,12 @@ static const NSInteger TagOffset = 1000;
 	rect.size.height = self.view.bounds.size.height - rect.origin.y;
 	contentContainerView = [[UIView alloc] initWithFrame:rect];
 	[contentContainerView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
+
+	if (_swipeLeft != nil)
+		[contentContainerView addGestureRecognizer:_swipeLeft];
+	if (_swipeRight != nil)
+		[contentContainerView addGestureRecognizer:_swipeRight];
+	
 	[self.view addSubview:contentContainerView];
 	NSLog(@"[MHTabBarController]: Size of contentContainer: %@", NSStringFromCGRect(contentContainerView.frame));
 	
@@ -117,6 +125,251 @@ static const NSInteger TagOffset = 1000;
 		contentContainerView = nil;
 	}
 }
+
+
+#pragma mark - Override Methods
+
+- (void)setSwipe:(UISwipeGestureRecognizerDirection)recognizerDirection
+{
+	NSLog(@"[MHTabBarController]: Set Swipe to direction: value: %d - Left: %d - Right: %d", (recognizerDirection), UISwipeGestureRecognizerDirectionLeft, UISwipeGestureRecognizerDirectionRight);
+	
+	if ((recognizerDirection == UISwipeGestureRecognizerDirectionLeft) || (recognizerDirection == (UISwipeGestureRecognizerDirectionLeft | UISwipeGestureRecognizerDirectionRight)))
+	{
+		NSLog(@"[MHTabBarController]: Swipe Left configured");
+		_swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeLeft:)];
+		[_swipeLeft setDirection:UISwipeGestureRecognizerDirectionLeft];
+	}
+	
+	if ((recognizerDirection == UISwipeGestureRecognizerDirectionRight) || (recognizerDirection == (UISwipeGestureRecognizerDirectionLeft | UISwipeGestureRecognizerDirectionRight)))
+	{
+		NSLog(@"[MHTabBarController]: Swipe Right configured");
+		_swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeRight:)];
+		[_swipeRight setDirection:UISwipeGestureRecognizerDirectionRight];
+	}
+}
+
+- (void)setButtonWidth:(CGFloat)buttonWidth
+{
+	customButtonWidth = YES;
+	_buttonWidth = buttonWidth;
+	
+	if (customIndicator == YES)
+	{
+		CGRect frame = [_indicator frame];
+		frame.size.width = buttonWidth;
+		[_indicator setFrame:frame];
+	}
+}
+
+- (void)changeButtonStateIndex:(NSUInteger)index toState:(UIControlState)state
+{
+	NSAssert(index < [self.viewControllers count], @"");
+	
+	MHTabBarButton *button = (MHTabBarButton*)[[tabButtonsContainerView subviews] objectAtIndex:index];
+	
+	[button setState:state];
+}
+
+- (void)setIndicator:(UIImageView *)indicator
+{
+	customIndicator = YES;
+	
+	CGRect frame = indicator.frame;
+	CGRect sbFrame = [UIApplication sharedApplication].statusBarFrame;
+	frame.origin.y += (sbFrame.origin.y + sbFrame.size.height);
+	[indicator setFrame:frame];
+	
+	_indicatorOriginalFrame = frame;
+	
+	_indicator = indicator;
+}
+
+- (void)setViewControllers:(NSArray *)newViewControllers
+{
+	NSAssert([newViewControllers count] >= 1
+			 , @"MHTabBarController requires at least two view controllers");
+	
+	UIViewController *oldSelectedViewController = self.selectedViewController;
+	
+	// Remove the old child view controllers.
+	for (UIViewController *viewController in _viewControllers)
+	{
+		[viewController willMoveToParentViewController:nil];
+		[viewController removeFromParentViewController];
+	}
+	
+	_viewControllers = [newViewControllers copy];
+	
+	//	Calculate new width of button if no custom value specified
+	if (customButtonWidth == NO)
+		[self setButtonWidth:floorf(self.view.bounds.size.width / [_viewControllers count])];
+	
+	// This follows the same rules as UITabBarController for trying to
+	// re-select the previously selected view controller.
+	NSUInteger newIndex = [_viewControllers indexOfObject:oldSelectedViewController];
+	if (newIndex != NSNotFound)
+		_selectedIndex = newIndex;
+	else if (newIndex < [_viewControllers count])
+		_selectedIndex = newIndex;
+	else
+		_selectedIndex = 0;
+	
+	// Add the new child view controllers.
+	for (UIViewController *viewController in _viewControllers)
+	{
+		[self addChildViewController:viewController];
+		[viewController didMoveToParentViewController:self];
+	}
+	
+	if ([self isViewLoaded])
+		[self reloadTabButtons];
+}
+
+- (void)setSelectedIndex:(NSUInteger)newSelectedIndex
+{
+	[self setSelectedIndex:newSelectedIndex animated:NO];
+}
+
+- (void)setSelectedIndex:(NSUInteger)newSelectedIndex animated:(BOOL)animated
+{
+	NSAssert(newSelectedIndex < [self.viewControllers count], @"View controller index out of bounds");
+	
+	if ([self.delegate respondsToSelector:@selector(mh_tabBarController:shouldSelectViewController:atIndex:)])
+	{
+		UIViewController *toViewController = (self.viewControllers)[newSelectedIndex];
+		if (![self.delegate mh_tabBarController:self shouldSelectViewController:toViewController atIndex:newSelectedIndex])
+			return;
+	}
+	
+	if (![self isViewLoaded])
+	{
+		_selectedIndex = newSelectedIndex;
+	}
+	else if (_selectedIndex != newSelectedIndex)
+	{
+		for (unsigned int i = 0; i < [self.viewControllers count]; i++)
+		{
+			[self changeButtonStateIndex:i toState:UIControlStateNormal];
+		}
+		
+		UIViewController *fromViewController;
+		UIViewController *toViewController;
+		
+		if (_selectedIndex != NSNotFound)
+		{
+			MHTabBarButton *fromButton = (MHTabBarButton *)[tabButtonsContainerView viewWithTag:TagOffset + _selectedIndex];
+			[self deselectTabButton:fromButton];
+			fromViewController = self.selectedViewController;
+		}
+		
+		NSUInteger oldSelectedIndex = _selectedIndex;
+		_selectedIndex = newSelectedIndex;
+		
+		MHTabBarButton *toButton;
+		if (_selectedIndex != NSNotFound)
+		{
+			toButton = (MHTabBarButton *)[tabButtonsContainerView viewWithTag:TagOffset + _selectedIndex];
+			[self selectTabButton:toButton];
+			toViewController = self.selectedViewController;
+		}
+		
+		if (toViewController == nil)  // don't animate
+		{
+			[fromViewController.view removeFromSuperview];
+		}
+		else if (fromViewController == nil)  // don't animate
+		{
+			toViewController.view.frame = contentContainerView.bounds;
+			[contentContainerView addSubview:toViewController.view];
+			[self centerIndicatorOnButton:toButton];
+			
+			if ([self.delegate respondsToSelector:@selector(mh_tabBarController:didSelectViewController:atIndex:)])
+				[self.delegate mh_tabBarController:self didSelectViewController:toViewController atIndex:newSelectedIndex];
+		}
+		else if (animated)
+		{
+			CGRect rect = contentContainerView.bounds;
+			if (oldSelectedIndex < newSelectedIndex)
+				rect.origin.x = rect.size.width;
+			else
+				rect.origin.x = -rect.size.width;
+			
+			toViewController.view.frame = rect;
+			//			tabButtonsContainerView.userInteractionEnabled = NO;
+			
+			[self transitionFromViewController:fromViewController
+							  toViewController:toViewController
+									  duration:0.3f
+									   options:UIViewAnimationOptionLayoutSubviews | UIViewAnimationOptionCurveEaseOut
+									animations:^
+			 {
+				 CGRect rect = fromViewController.view.frame;
+				 if (oldSelectedIndex < newSelectedIndex)
+					 rect.origin.x = -rect.size.width;
+				 else
+					 rect.origin.x = rect.size.width;
+				 
+				 fromViewController.view.frame = rect;
+				 toViewController.view.frame = contentContainerView.bounds;
+				 //					dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+				 //						dispatch_async(dispatch_get_main_queue(), ^{
+				 //							CGRect rect = fromViewController.view.frame;
+				 //							if (oldSelectedIndex < newSelectedIndex)
+				 //								rect.origin.x = -rect.size.width;
+				 //							else
+				 //								rect.origin.x = rect.size.width;
+				 //
+				 //							fromViewController.view.frame = rect;
+				 //							toViewController.view.frame = contentContainerView.bounds;
+				 //						});
+				 //					});
+				 
+				 [self centerIndicatorOnButton:toButton];
+			 }
+									completion:^(BOOL finished)
+			 {
+				 tabButtonsContainerView.userInteractionEnabled = YES;
+				 
+				 if ([self.delegate respondsToSelector:@selector(mh_tabBarController:didSelectViewController:atIndex:)])
+					 [self.delegate mh_tabBarController:self didSelectViewController:toViewController atIndex:newSelectedIndex];
+			 }];
+		}
+		else  // not animated
+		{
+			[fromViewController.view removeFromSuperview];
+			
+			toViewController.view.frame = contentContainerView.bounds;
+			[contentContainerView addSubview:toViewController.view];
+			[self centerIndicatorOnButton:toButton];
+			
+			if ([self.delegate respondsToSelector:@selector(mh_tabBarController:didSelectViewController:atIndex:)])
+				[self.delegate mh_tabBarController:self didSelectViewController:toViewController atIndex:newSelectedIndex];
+		}
+	}
+}
+
+- (UIViewController *)selectedViewController
+{
+	if (self.selectedIndex != NSNotFound)
+		return (self.viewControllers)[self.selectedIndex];
+	else
+		return nil;
+}
+
+- (void)setSelectedViewController:(UIViewController *)newSelectedViewController
+{
+	[self setSelectedViewController:newSelectedViewController animated:NO];
+}
+
+- (void)setSelectedViewController:(UIViewController *)newSelectedViewController animated:(BOOL)animated
+{
+	NSUInteger index = [self.viewControllers indexOfObject:newSelectedViewController];
+	if (index != NSNotFound)
+		[self setSelectedIndex:index animated:animated];
+}
+
+
+#pragma mark - Private Methods
 
 - (void)reloadTabButtons
 {
@@ -200,221 +453,55 @@ static const NSInteger TagOffset = 1000;
 	}
 }
 
-- (void)setButtonWidth:(CGFloat)buttonWidth
+
+
+#pragma mark - Delegate objects
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-	customButtonWidth = YES;
-	_buttonWidth = buttonWidth;
+	NSLog(@"[MHTabBarController]: Touch ended");
+}
+
+- (void)swipeLeft:(UISwipeGestureRecognizer*)recognizer
+{
+	NSLog(@"[MHTabBarController]: Swipe Left. State: %d - %d", recognizer.state, UIGestureRecognizerStateRecognized);
 	
-	if (customIndicator == YES)
-	{
-		CGRect frame = [_indicator frame];
-		frame.size.width = buttonWidth;
-		[_indicator setFrame:frame];
-	}
-}
-
-- (void)setIndicator:(UIImageView *)indicator
-{
-	customIndicator = YES;
+	CGPoint point = [recognizer locationInView:contentContainerView];
+	NSLog(@"[MHTabBarController]: Swipe Left Location %@", NSStringFromCGPoint(point));
 	
-	CGRect frame = indicator.frame;
-	CGRect sbFrame = [UIApplication sharedApplication].statusBarFrame;
-	frame.origin.y += (sbFrame.origin.y + sbFrame.size.height);
-	[indicator setFrame:frame];
+	if (point.x >= 310)
+	{
+		NSLog(@"[MHTabBarController]: Correct position.");
+		if (_selectedIndex == ([_viewControllers count] - 1))
+			[self setSelectedIndex:0 animated:YES];
+		else [self setSelectedIndex:(_selectedIndex + 1) animated:YES];
+	}
 	
-	_indicatorOriginalFrame = frame;
+}
+
+- (void)swipeRight:(UISwipeGestureRecognizer*)recognizer
+{
+	NSLog(@"[MHTabBarController]: Swipe Right. State: %d - %d", recognizer.state, UIGestureRecognizerStateRecognized);
 	
-	_indicator = indicator;
-}
-
-- (void)setViewControllers:(NSArray *)newViewControllers
-{
-	NSAssert([newViewControllers count] >= 1
-			 , @"MHTabBarController requires at least two view controllers");
-
-	UIViewController *oldSelectedViewController = self.selectedViewController;
-
-	// Remove the old child view controllers.
-	for (UIViewController *viewController in _viewControllers)
-	{
-		[viewController willMoveToParentViewController:nil];
-		[viewController removeFromParentViewController];
-	}
-
-	_viewControllers = [newViewControllers copy];
+	CGPoint point = [recognizer locationInView:contentContainerView];
+	NSLog(@"[MHTabBarController]: Swipe Right Location %@", NSStringFromCGPoint(point));
 	
-//	Calculate new width of button if no custom value specified
-	if (customButtonWidth == NO)
-		[self setButtonWidth:floorf(self.view.bounds.size.width / [_viewControllers count])];
-
-	// This follows the same rules as UITabBarController for trying to
-	// re-select the previously selected view controller.
-	NSUInteger newIndex = [_viewControllers indexOfObject:oldSelectedViewController];
-	if (newIndex != NSNotFound)
-		_selectedIndex = newIndex;
-	else if (newIndex < [_viewControllers count])
-		_selectedIndex = newIndex;
-	else
-		_selectedIndex = 0;
-
-	// Add the new child view controllers.
-	for (UIViewController *viewController in _viewControllers)
+	if (point.x <= 10)
 	{
-		[self addChildViewController:viewController];
-		[viewController didMoveToParentViewController:self];
+		NSLog(@"[MHTabBarController]: Correct position.");
+		if (_selectedIndex == 0)
+			[self setSelectedIndex:([_viewControllers count] - 1) animated:YES];
+		else [self setSelectedIndex:(_selectedIndex - 1) animated:YES];
 	}
-
-	if ([self isViewLoaded])
-		[self reloadTabButtons];
-}
-
-- (void)setSelectedIndex:(NSUInteger)newSelectedIndex
-{
-	[self setSelectedIndex:newSelectedIndex animated:NO];
-}
-
-- (void)setSelectedIndex:(NSUInteger)newSelectedIndex animated:(BOOL)animated
-{
-	NSAssert(newSelectedIndex < [self.viewControllers count], @"View controller index out of bounds");
-
-	if ([self.delegate respondsToSelector:@selector(mh_tabBarController:shouldSelectViewController:atIndex:)])
-	{
-		UIViewController *toViewController = (self.viewControllers)[newSelectedIndex];
-		if (![self.delegate mh_tabBarController:self shouldSelectViewController:toViewController atIndex:newSelectedIndex])
-			return;
-	}
-
-	if (![self isViewLoaded])
-	{
-		_selectedIndex = newSelectedIndex;
-	}
-	else if (_selectedIndex != newSelectedIndex)
-	{
-		for (unsigned int i = 0; i < [self.viewControllers count]; i++)
-		{
-			[self changeButtonStateIndex:i toState:UIControlStateNormal];
-		}
-		
-		UIViewController *fromViewController;
-		UIViewController *toViewController;
-
-		if (_selectedIndex != NSNotFound)
-		{
-			MHTabBarButton *fromButton = (MHTabBarButton *)[tabButtonsContainerView viewWithTag:TagOffset + _selectedIndex];
-			[self deselectTabButton:fromButton];
-			fromViewController = self.selectedViewController;
-		}
-
-		NSUInteger oldSelectedIndex = _selectedIndex;
-		_selectedIndex = newSelectedIndex;
-
-		MHTabBarButton *toButton;
-		if (_selectedIndex != NSNotFound)
-		{
-			toButton = (MHTabBarButton *)[tabButtonsContainerView viewWithTag:TagOffset + _selectedIndex];
-			[self selectTabButton:toButton];
-			toViewController = self.selectedViewController;
-		}
-
-		if (toViewController == nil)  // don't animate
-		{
-			[fromViewController.view removeFromSuperview];
-		}
-		else if (fromViewController == nil)  // don't animate
-		{
-			toViewController.view.frame = contentContainerView.bounds;
-			[contentContainerView addSubview:toViewController.view];
-			[self centerIndicatorOnButton:toButton];
-
-			if ([self.delegate respondsToSelector:@selector(mh_tabBarController:didSelectViewController:atIndex:)])
-				[self.delegate mh_tabBarController:self didSelectViewController:toViewController atIndex:newSelectedIndex];
-		}
-		else if (animated)
-		{
-			CGRect rect = contentContainerView.bounds;
-			if (oldSelectedIndex < newSelectedIndex)
-				rect.origin.x = rect.size.width;
-			else
-				rect.origin.x = -rect.size.width;
-
-			toViewController.view.frame = rect;
-//			tabButtonsContainerView.userInteractionEnabled = NO;
-
-			[self transitionFromViewController:fromViewController
-				toViewController:toViewController
-				duration:0.3f
-				options:UIViewAnimationOptionLayoutSubviews | UIViewAnimationOptionCurveEaseOut
-				animations:^
-				{
-					CGRect rect = fromViewController.view.frame;
-					if (oldSelectedIndex < newSelectedIndex)
-						rect.origin.x = -rect.size.width;
-					else
-						rect.origin.x = rect.size.width;
-					
-					fromViewController.view.frame = rect;
-					toViewController.view.frame = contentContainerView.bounds;
-//					dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-//						dispatch_async(dispatch_get_main_queue(), ^{
-//							CGRect rect = fromViewController.view.frame;
-//							if (oldSelectedIndex < newSelectedIndex)
-//								rect.origin.x = -rect.size.width;
-//							else
-//								rect.origin.x = rect.size.width;
-//							
-//							fromViewController.view.frame = rect;
-//							toViewController.view.frame = contentContainerView.bounds;
-//						});
-//					});
-					
-					[self centerIndicatorOnButton:toButton];
-				}
-				completion:^(BOOL finished)
-				{
-					tabButtonsContainerView.userInteractionEnabled = YES;
-
-					if ([self.delegate respondsToSelector:@selector(mh_tabBarController:didSelectViewController:atIndex:)])
-						[self.delegate mh_tabBarController:self didSelectViewController:toViewController atIndex:newSelectedIndex];
-				}];
-		}
-		else  // not animated
-		{
-			[fromViewController.view removeFromSuperview];
-
-			toViewController.view.frame = contentContainerView.bounds;
-			[contentContainerView addSubview:toViewController.view];
-			[self centerIndicatorOnButton:toButton];
-
-			if ([self.delegate respondsToSelector:@selector(mh_tabBarController:didSelectViewController:atIndex:)])
-				[self.delegate mh_tabBarController:self didSelectViewController:toViewController atIndex:newSelectedIndex];
-		}
-	}
-}
-
-- (UIViewController *)selectedViewController
-{
-	if (self.selectedIndex != NSNotFound)
-		return (self.viewControllers)[self.selectedIndex];
-	else
-		return nil;
-}
-
-- (void)setSelectedViewController:(UIViewController *)newSelectedViewController
-{
-	[self setSelectedViewController:newSelectedViewController animated:NO];
-}
-
-- (void)setSelectedViewController:(UIViewController *)newSelectedViewController animated:(BOOL)animated
-{
-	NSUInteger index = [self.viewControllers indexOfObject:newSelectedViewController];
-	if (index != NSNotFound)
-		[self setSelectedIndex:index animated:animated];
+	
 }
 
 - (void)tabButtonPressed:(MHTabBarButton *)sender
 {
 	[self setSelectedIndex:sender.tag - TagOffset animated:YES];
 }
+
+
 
 #pragma mark - Change these methods to customize the look of the buttons
 
@@ -460,13 +547,6 @@ static const NSInteger TagOffset = 1000;
 	[button setSelected:NO];
 }
 
-- (void)changeButtonStateIndex:(NSUInteger)index toState:(UIControlState)state
-{
-	NSAssert(index < [self.viewControllers count], @"");
-	
-	MHTabBarButton *button = (MHTabBarButton*)[[tabButtonsContainerView subviews] objectAtIndex:index];
-	
-	[button setState:state];
-}
+
 
 @end

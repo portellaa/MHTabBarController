@@ -31,6 +31,7 @@
 	[tabBarController setButtonWidth:60.0f];
 	[tabBarController setBarHeight:60.0f];
 	[tabBarController setBarColor:UIColorFromRGB(COLOR_MENU_SUBMENU)];
+	[tabBarController setSwipe:(UISwipeGestureRecognizerDirectionLeft | UISwipeGestureRecognizerDirectionRight)];
 	
 	UIImageView *indicator = [[UIImageView alloc] initWithFrame:CGRectMake(0, ([tabBarController barHeight] - 5.0f), [tabBarController buttonWidth], 5.0f)];
 	[indicator setBackgroundColor:UIColorFromRGB(COLOR_SELECTED_LINE)];
