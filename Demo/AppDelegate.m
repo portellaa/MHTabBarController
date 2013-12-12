@@ -28,8 +28,8 @@
 
 	NSArray *viewControllers = @[listViewController1, listViewController2, listViewController3];
 	MHTabBarController *tabBarController = [[MHTabBarController alloc] init];
-	[tabBarController setButtonWidth:60.0f];
-	[tabBarController setBarHeight:60.0f];
+	[tabBarController setButtonWidth:50.0f];
+	[tabBarController setBarHeight:50.0f];
 	[tabBarController setBarColor:UIColorFromRGB(COLOR_MENU_SUBMENU)];
 	[tabBarController setSwipe:(UISwipeGestureRecognizerDirectionLeft | UISwipeGestureRecognizerDirectionRight)];
 	
@@ -141,6 +141,17 @@
 	}
 	
 	return YES;
+}
+
+#pragma mark Style methods
+
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+	return UIStatusBarStyleDefault;
+}
+
+- (BOOL)prefersStatusBarHidden {
+    return NO;
 }
 
 @end

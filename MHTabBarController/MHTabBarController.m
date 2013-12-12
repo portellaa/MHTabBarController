@@ -38,6 +38,7 @@ static const NSInteger TagOffset = 1000;
 {
 	UIView *tabButtonsContainerView;
 	UIView *contentContainerView;
+	UIView *topBarView;
 	
 	BOOL customButtonWidth, customIndicator;
 }
@@ -63,15 +64,45 @@ static const NSInteger TagOffset = 1000;
 	return self;
 }
 
+- (void)awakeFromNib
+{
+	if ([self respondsToSelector:@selector(edgesForExtendedLayout)])
+	{
+		[self setExtendedLayoutIncludesOpaqueBars:YES];
+		[self setEdgesForExtendedLayout:UIRectEdgeAll];
+	}
+	
+	[super awakeFromNib];
+}
+
 - (void)viewDidLoad
 {
 	[super viewDidLoad];
+	
+	CGRect frame = CGRectZero;
+	frame.size.width = self.view.bounds.size.width;
+	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+	{
+		[self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault];
+		[self.navigationController.navigationBar setShadowImage:[UIImage new]];
+		[self.navigationController.navigationBar setTranslucent:YES];
+		[self.navigationController.navigationBar setTitleTextAttributes:@{
+																		  NSForegroundColorAttributeName : [UIColor whiteColor]
+																		  }];
+		
+		frame.size.height += [[UIApplication sharedApplication] statusBarFrame].size.height;
+		frame.size.height += self.navigationController.navigationBar.frame.size.height;
+		topBarView = [[UIView alloc] initWithFrame:frame];
+		[topBarView setBackgroundColor:_barColor];
+		[self.view addSubview:topBarView];
+	}
 
 	[self.view setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
 	
-	CGRect rect = CGRectMake(_top.x, _top.y, self.view.bounds.size.width, _barHeight);
-	rect.origin.y += ([UIApplication sharedApplication].statusBarFrame.size.height + [UIApplication sharedApplication].statusBarFrame.origin.y);
-	tabButtonsContainerView = [[UIView alloc] initWithFrame:rect];
+	frame.origin.y += topBarView.frame.size.height;
+	frame.size.height = _barHeight;
+	
+	tabButtonsContainerView = [[UIView alloc] initWithFrame:frame];
 	[tabButtonsContainerView setBackgroundColor:_barColor];
 	[tabButtonsContainerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
 	[tabButtonsContainerView setOpaque:NO];
@@ -79,9 +110,10 @@ static const NSInteger TagOffset = 1000;
 	
 	NSLog(@"[MHTabBarController]: Rect before tabButtonsContainerView: %@", NSStringFromCGRect(contentContainerView.frame));
 
-	rect.origin.y += _barHeight;
-	rect.size.height = self.view.bounds.size.height - rect.origin.y;
-	contentContainerView = [[UIView alloc] initWithFrame:rect];
+	frame.origin.y += _barHeight;
+	frame.size.height = self.view.bounds.size.height - frame.origin.y;
+	contentContainerView = [[UIView alloc] initWithFrame:frame];
+	
 	[contentContainerView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
 
 	if (_swipeLeft != nil)
@@ -91,6 +123,11 @@ static const NSInteger TagOffset = 1000;
 	
 	[self.view addSubview:contentContainerView];
 	NSLog(@"[MHTabBarController]: Size of contentContainer: %@", NSStringFromCGRect(contentContainerView.frame));
+	
+	CGRect frameIndicator = _indicator.frame;
+	frameIndicator.origin.y += tabButtonsContainerView.frame.origin.y;
+	[_indicator setFrame:frameIndicator];
+	_indicatorOriginalFrame = frameIndicator;
 	
 	[self.view addSubview:_indicator];
 
@@ -174,12 +211,11 @@ static const NSInteger TagOffset = 1000;
 {
 	customIndicator = YES;
 	
-	CGRect frame = indicator.frame;
-	CGRect sbFrame = [UIApplication sharedApplication].statusBarFrame;
-	frame.origin.y += (sbFrame.origin.y + sbFrame.size.height);
-	[indicator setFrame:frame];
+	CGRect frameIndicator = indicator.frame;
+	frameIndicator.origin.y += tabButtonsContainerView.frame.origin.y;
+	[indicator setFrame:frameIndicator];
 	
-	_indicatorOriginalFrame = frame;
+	_indicatorOriginalFrame = frameIndicator;
 	
 	_indicator = indicator;
 }
@@ -469,7 +505,7 @@ static const NSInteger TagOffset = 1000;
 	CGPoint point = [recognizer locationInView:contentContainerView];
 	NSLog(@"[MHTabBarController]: Swipe Left Location %@", NSStringFromCGPoint(point));
 	
-	if (point.x >= 310)
+	if (point.x >= 300)
 	{
 		NSLog(@"[MHTabBarController]: Correct position.");
 		if (_selectedIndex == ([_viewControllers count] - 1))
@@ -486,7 +522,7 @@ static const NSInteger TagOffset = 1000;
 	CGPoint point = [recognizer locationInView:contentContainerView];
 	NSLog(@"[MHTabBarController]: Swipe Right Location %@", NSStringFromCGPoint(point));
 	
-	if (point.x <= 10)
+	if (point.x <= 20)
 	{
 		NSLog(@"[MHTabBarController]: Correct position.");
 		if (_selectedIndex == 0)
@@ -547,6 +583,9 @@ static const NSInteger TagOffset = 1000;
 	[button setSelected:NO];
 }
 
-
+//- (UIStatusBarStyle)preferredStatusBarStyle
+//{
+//	return UIStatusBarStyleLightContent;
+//}
 
 @end
