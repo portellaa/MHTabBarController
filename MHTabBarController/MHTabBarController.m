@@ -40,7 +40,7 @@ static const NSInteger TagOffset = 1000;
 	UIView *contentContainerView;
 	UIView *topBarView;
 	
-	BOOL customButtonWidth, customIndicator;
+	BOOL customButtonWidth, customIndicator, customTopBarColor;
 }
 
 - (id)init
@@ -57,6 +57,7 @@ static const NSInteger TagOffset = 1000;
 		
 		customButtonWidth = NO;
 		customIndicator = NO;
+		customTopBarColor = NO;
 
 		_indicator = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"MHTabBarIndicator"]];
 	}
@@ -93,7 +94,11 @@ static const NSInteger TagOffset = 1000;
 		frame.size.height += [[UIApplication sharedApplication] statusBarFrame].size.height;
 		frame.size.height += self.navigationController.navigationBar.frame.size.height;
 		topBarView = [[UIView alloc] initWithFrame:frame];
-		[topBarView setBackgroundColor:_barColor];
+		
+		if (customTopBarColor == NO)
+			_topBarColor = _barColor;
+		[topBarView setBackgroundColor:_topBarColor];
+		
 		[self.view addSubview:topBarView];
 	}
 
@@ -196,6 +201,15 @@ static const NSInteger TagOffset = 1000;
 		frame.size.width = buttonWidth;
 		[_indicator setFrame:frame];
 	}
+}
+
+- (void)setTopBarColor:(UIColor *)topBarColor
+{
+	customTopBarColor = YES;
+	_topBarColor = topBarColor;
+	
+	if ((self.isViewLoaded == YES) && (topBarView != nil))
+		[topBarView setBackgroundColor:_topBarColor];
 }
 
 - (void)changeButtonStateIndex:(NSUInteger)index toState:(UIControlState)state

@@ -69,6 +69,7 @@
  */
 @property (nonatomic, retain) UIImageView *indicator;
 
+@property (nonatomic, strong) UIColor *topBarColor;
 
 /**
  *  Used to change the visible view controller using the index of the view on the top bar.
