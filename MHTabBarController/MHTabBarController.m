@@ -70,7 +70,7 @@ static const NSInteger TagOffset = 1000;
 	if ([self respondsToSelector:@selector(edgesForExtendedLayout)])
 	{
 		[self setExtendedLayoutIncludesOpaqueBars:YES];
-		[self setEdgesForExtendedLayout:UIRectEdgeAll];
+		[self setEdgesForExtendedLayout:UIRectEdgeNone];
 	}
 	
 	[super awakeFromNib];
@@ -79,38 +79,37 @@ static const NSInteger TagOffset = 1000;
 - (void)viewDidLoad
 {
 	[super viewDidLoad];
-	
+
 	CGRect frame = CGRectZero;
 	frame.size.width = self.view.bounds.size.width;
-	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
-	{
-		[self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault];
-		[self.navigationController.navigationBar setShadowImage:[UIImage new]];
-		[self.navigationController.navigationBar setTranslucent:YES];
-		[self.navigationController.navigationBar setTitleTextAttributes:@{
-																		  NSForegroundColorAttributeName : [UIColor whiteColor]
-																		  }];
-		
-		frame.size.height += [[UIApplication sharedApplication] statusBarFrame].size.height;
-		frame.size.height += self.navigationController.navigationBar.frame.size.height;
-		topBarView = [[UIView alloc] initWithFrame:frame];
-		
-		if (customTopBarColor == NO)
-			_topBarColor = _barColor;
-		[topBarView setBackgroundColor:_topBarColor];
-		
-		[self.view addSubview:topBarView];
-	}
+//	if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"7.0"))
+//	{
+//		[self.navigationController.navigationBar setBackgroundImage:[UIImage new] forBarMetrics:UIBarMetricsDefault];
+//		[self.navigationController.navigationBar setShadowImage:[UIImage new]];
+//		[self.navigationController.navigationBar setTranslucent:YES];
+//		[self.navigationController.navigationBar setTitleTextAttributes:@{
+//																		  NSForegroundColorAttributeName : [UIColor whiteColor]
+//																		  }];
+//		
+//		frame.size.height += [[UIApplication sharedApplication] statusBarFrame].size.height;
+//		frame.size.height += self.navigationController.navigationBar.frame.size.height;
+//		topBarView = [[UIView alloc] initWithFrame:frame];
+//		
+//		if (customTopBarColor == NO)
+//			_topBarColor = _barColor;
+//		[topBarView setBackgroundColor:_topBarColor];
+//		
+//		[self.view addSubview:topBarView];
+//	}
 
-	[self.view setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
+	[self.view setAutoresizingMask:UIViewAutoresizingFlexibleHeight];
+
+//	frame.origin.y += topBarView.frame.size.height;
 	
-	frame.origin.y += topBarView.frame.size.height;
 	frame.size.height = _barHeight;
-	
 	tabButtonsContainerView = [[UIView alloc] initWithFrame:frame];
 	[tabButtonsContainerView setBackgroundColor:_barColor];
-	[tabButtonsContainerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-	[tabButtonsContainerView setOpaque:NO];
+	[tabButtonsContainerView setOpaque:YES];
 	[self.view addSubview:tabButtonsContainerView];
 	
 	NSLog(@"[MHTabBarController]: Rect before tabButtonsContainerView: %@", NSStringFromCGRect(contentContainerView.frame));
@@ -119,7 +118,7 @@ static const NSInteger TagOffset = 1000;
 	frame.size.height = self.view.bounds.size.height - frame.origin.y;
 	contentContainerView = [[UIView alloc] initWithFrame:frame];
 	
-	[contentContainerView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
+	[contentContainerView setAutoresizingMask:UIViewAutoresizingFlexibleHeight];
 
 	if (_swipeLeft != nil)
 		[contentContainerView addGestureRecognizer:_swipeLeft];
@@ -137,6 +136,15 @@ static const NSInteger TagOffset = 1000;
 	[self.view addSubview:_indicator];
 
 	[self reloadTabButtons];
+	
+	[self.view setBackgroundColor:_topBarColor];
+	
+	if ([self.navigationController.navigationBar respondsToSelector:@selector(setBarTintColor:)])
+	{
+        [self.navigationController.navigationBar setBarTintColor:_topBarColor];
+    }
+	
+	[super setNeedsStatusBarAppearanceUpdate];
 }
 
 - (void)viewWillLayoutSubviews
@@ -208,8 +216,12 @@ static const NSInteger TagOffset = 1000;
 	customTopBarColor = YES;
 	_topBarColor = topBarColor;
 	
-	if ((self.isViewLoaded == YES) && (topBarView != nil))
-		[topBarView setBackgroundColor:_topBarColor];
+	if ([self.navigationController.navigationBar respondsToSelector:@selector(setBarTintColor:)])
+	{
+        [self.navigationController.navigationBar setBarTintColor:_topBarColor];
+    }
+	
+	[super setNeedsStatusBarAppearanceUpdate];
 }
 
 - (void)changeButtonStateIndex:(NSUInteger)index toState:(UIControlState)state
@@ -451,6 +463,7 @@ static const NSInteger TagOffset = 1000;
 
 		++index;
 	}
+	DDLogDebug(@"=======Butons bar: %@", NSStringFromCGSize(tabButtonsContainerView.frame.size));
 }
 
 - (void)removeTabButtons
