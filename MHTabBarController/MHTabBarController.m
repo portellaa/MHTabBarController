@@ -111,8 +111,6 @@ static const NSInteger TagOffset = 1000;
 	[tabButtonsContainerView setBackgroundColor:_barColor];
 	[tabButtonsContainerView setOpaque:YES];
 	[self.view addSubview:tabButtonsContainerView];
-	
-	NSLog(@"[MHTabBarController]: Rect before tabButtonsContainerView: %@", NSStringFromCGRect(contentContainerView.frame));
 
 	frame.origin.y += _barHeight;
 	frame.size.height = self.view.bounds.size.height - frame.origin.y;
@@ -126,7 +124,6 @@ static const NSInteger TagOffset = 1000;
 		[contentContainerView addGestureRecognizer:_swipeRight];
 	
 	[self.view addSubview:contentContainerView];
-	NSLog(@"[MHTabBarController]: Size of contentContainer: %@", NSStringFromCGRect(contentContainerView.frame));
 	
 	CGRect frameIndicator = _indicator.frame;
 	frameIndicator.origin.y += tabButtonsContainerView.frame.origin.y;
@@ -181,18 +178,15 @@ static const NSInteger TagOffset = 1000;
 
 - (void)setSwipe:(UISwipeGestureRecognizerDirection)recognizerDirection
 {
-	NSLog(@"[MHTabBarController]: Set Swipe to direction: value: %d - Left: %d - Right: %d", (recognizerDirection), UISwipeGestureRecognizerDirectionLeft, UISwipeGestureRecognizerDirectionRight);
 	
 	if ((recognizerDirection == UISwipeGestureRecognizerDirectionLeft) || (recognizerDirection == (UISwipeGestureRecognizerDirectionLeft | UISwipeGestureRecognizerDirectionRight)))
 	{
-		NSLog(@"[MHTabBarController]: Swipe Left configured");
 		_swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeLeft:)];
 		[_swipeLeft setDirection:UISwipeGestureRecognizerDirectionLeft];
 	}
 	
 	if ((recognizerDirection == UISwipeGestureRecognizerDirectionRight) || (recognizerDirection == (UISwipeGestureRecognizerDirectionLeft | UISwipeGestureRecognizerDirectionRight)))
 	{
-		NSLog(@"[MHTabBarController]: Swipe Right configured");
 		_swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeRight:)];
 		[_swipeRight setDirection:UISwipeGestureRecognizerDirectionRight];
 	}
@@ -463,7 +457,6 @@ static const NSInteger TagOffset = 1000;
 
 		++index;
 	}
-	DDLogDebug(@"=======Butons bar: %@", NSStringFromCGSize(tabButtonsContainerView.frame.size));
 }
 
 - (void)removeTabButtons
@@ -522,19 +515,15 @@ static const NSInteger TagOffset = 1000;
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-	NSLog(@"[MHTabBarController]: Touch ended");
 }
 
 - (void)swipeLeft:(UISwipeGestureRecognizer*)recognizer
 {
-	NSLog(@"[MHTabBarController]: Swipe Left. State: %d - %d", recognizer.state, UIGestureRecognizerStateRecognized);
 	
 	CGPoint point = [recognizer locationInView:contentContainerView];
-	NSLog(@"[MHTabBarController]: Swipe Left Location %@", NSStringFromCGPoint(point));
 	
 	if (point.x >= 300)
 	{
-		NSLog(@"[MHTabBarController]: Correct position.");
 		if (_selectedIndex == ([_viewControllers count] - 1))
 			[self setSelectedIndex:0 animated:YES];
 		else [self setSelectedIndex:(_selectedIndex + 1) animated:YES];
@@ -544,14 +533,10 @@ static const NSInteger TagOffset = 1000;
 
 - (void)swipeRight:(UISwipeGestureRecognizer*)recognizer
 {
-	NSLog(@"[MHTabBarController]: Swipe Right. State: %d - %d", recognizer.state, UIGestureRecognizerStateRecognized);
-	
 	CGPoint point = [recognizer locationInView:contentContainerView];
-	NSLog(@"[MHTabBarController]: Swipe Right Location %@", NSStringFromCGPoint(point));
 	
 	if (point.x <= 20)
 	{
-		NSLog(@"[MHTabBarController]: Correct position.");
 		if (_selectedIndex == 0)
 			[self setSelectedIndex:([_viewControllers count] - 1) animated:YES];
 		else [self setSelectedIndex:(_selectedIndex - 1) animated:YES];

@@ -112,21 +112,17 @@
 {
 	switch (state) {
 		case UIControlStateNormal:
-			NSLog(@"[MHTabBarButton]: Setting normal color. %u", [backgroundColor hash]);
 			normalColor = backgroundColor;
 			[self setBackgroundColor:backgroundColor];
 			break;
 		case UIControlStateHighlighted:
-			NSLog(@"[MHTabBarButton]: Setting highlighted color. %u", [backgroundColor hash]);
 			highlightedColor = backgroundColor;
 			break;
 		case UIControlStateReserved:
-			NSLog(@"[MHTabBarButton]: Setting highlighted color. %u", [backgroundColor hash]);
 			reservedColor = backgroundColor;
 			break;
 		case UIControlStateSelected:
 		default:
-			NSLog(@"[MHTabBarButton]: Setting selected color. %u", [backgroundColor hash]);
 			selectedColor = backgroundColor;
 			break;
 	}
@@ -151,7 +147,6 @@
 
 - (void)changeColor:(UIControlState)state
 {
-	NSLog(@"[MHTabBarButton]: Cenas: %u - Changing color. State: %u", UIControlStateHighlighted, state);
 	switch (state) {
 		case UIControlStateNormal:
 			[self setBackgroundColor:normalColor];
