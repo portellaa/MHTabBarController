@@ -120,21 +120,16 @@
 		CGRect rect = indicator.frame;
 		
 		rect.origin.x = 0.0f;
-		rect.size.width = 60.0f * 3;
+		rect.size.width = 50.0f * 3;
 		indicator.frame = rect;
 		
 		indicator.hidden = NO;
 	}
 	else
 	{
-//		[tabBarController changeButtonStateIndex:1 toState:UIControlStateNormal];
-//		[tabBarController changeButtonStateIndex:2 toState:UIControlStateNormal];
-		
 		CGRect rect = indicator.frame;
-		rect.size.width = 60.0f;
-//		rect.origin.x = button.center.x - floorf(indicator.frame.size.width/2.0f);
-		rect.origin.x = 60.0f * tabBarController.selectedIndex;
-		//	rect.origin.y = _barHeight - _indicator.frame.size.height;
+		rect.size.width = 50.0f;
+		rect.origin.x = 50.0f * tabBarController.selectedIndex;
 		indicator.frame = rect;
 		
 		indicator.hidden = NO;

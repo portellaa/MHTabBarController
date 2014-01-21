@@ -70,7 +70,7 @@ static const NSInteger TagOffset = 1000;
 	if ([self respondsToSelector:@selector(edgesForExtendedLayout)])
 	{
 		[self setExtendedLayoutIncludesOpaqueBars:YES];
-		[self setEdgesForExtendedLayout:UIRectEdgeNone];
+		[self setEdgesForExtendedLayout:UIRectEdgeAll];
 	}
 	
 	[super awakeFromNib];
@@ -141,7 +141,8 @@ static const NSInteger TagOffset = 1000;
         [self.navigationController.navigationBar setBarTintColor:_topBarColor];
     }
 	
-	[super setNeedsStatusBarAppearanceUpdate];
+	if ([super respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)])
+		[super setNeedsStatusBarAppearanceUpdate];
 }
 
 - (void)viewWillLayoutSubviews
@@ -594,6 +595,18 @@ static const NSInteger TagOffset = 1000;
 {
 	[button setSelected:NO];
 }
+
+//#pragma mark - Rotation Methods
+//
+//- (NSUInteger)supportedInterfaceOrientations
+//{
+//	return UIInterfaceOrientationPortrait;
+//}
+//
+//- (BOOL)shouldAutorotate
+//{
+//	return YES;
+//}
 
 //- (UIStatusBarStyle)preferredStatusBarStyle
 //{
