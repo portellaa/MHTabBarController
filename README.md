@@ -3,22 +3,25 @@ MHTabBarController
 
 This is a custom container view controller that works on iOS 5, 6 and 7 and behaves just like a regular UITabBarController, except the tabs are at the top. It is possible too to fully customize the tab bar, with a different indicator, icons and text.
 
-![Screenshot](https://github.com/hollance/MHTabBarController/raw/master/ss_multipletabs.png)
+![Screenshot](https://raw2.github.com/meligaletiko/MHTabBarController/eeb5954467958fbcd5eebe4e1e320ec1ed41a101/ss_multipletabs.png)
 
-<iframe width="420" height="315" src="//www.youtube.com/embed/jA6YD3ctNdA" frameborder="0" allowfullscreen></iframe>
+<b>Check the controller behaviour on the following [video](http://youtu.be/jA6YD3ctNdA).</b>
+
 
 <p>To customize the tab bar look, you can delegate the controller, or if you are subclassing, override the method:</p>
 <code>
-- (MHTabBarButton*)personalizeButton:(MHTabBarButton*)button toViewController:(UIViewController *)viewController
+
+	- (MHTabBarButton*)personalizeButton:(MHTabBarButton*)button toViewController:(UIViewController *)viewController
+	
 </code>
 
 ## MHTabBarControllerDelegate
 
-- <b>- (MHTabBarButton*)personalizeButton:(MHTabBarButton*)button toViewController:(UIViewController*)viewController</b>
-
 Allows tab button customization. For example, to archive the screenshot customization, you can use the following block of code:
 <code>
 	
+	- (MHTabBarButton*)personalizeButton:(MHTabBarButton*)button toViewController:(UIViewController*)viewController
+	{
 	button.titleLabel.font = [UIFont boldSystemFontOfSize:18];
 	
 	[button setBackgroundColor:UIColorFromRGB(COLOR_MENU_COMBO) forState:UIControlStateReserved];
@@ -31,13 +34,15 @@ Allows tab button customization. For example, to archive the screenshot customiz
 	[button setTitleColor:[UIColor whiteColor] forState:UIControlStateSelected];
 	
 	[button setTitle:viewController.tabBarItem.title forState:UIControlStateNormal];
+	}
 	
 </code>
 
-- <b>- (BOOL)mh_tabBarController:(MHTabBarController *)tabBarController personalizeIndicator:(UIView *)indicator toButton:(MHTabBarButton *)button</b>
-
 Allows indicator customization to each tab button. Example:
 <code>
+
+	- (BOOL)mh_tabBarController:(MHTabBarController *)tabBarController personalizeIndicator:(UIView *)indicator toButton:(MHTabBarButton *)button
+	{
 
 	if (tabBarController.selectedIndex == 0)
 	{
@@ -63,6 +68,7 @@ Allows indicator customization to each tab button. Example:
 	}
 	
 	return YES;
+	}
 
 </code>
 
